@@ -1,0 +1,5 @@
+LWMC - LightWeight Media Center
+
+Media center using a protocol compatible with XBMC
+
+Instead of integrating a media player it uses external players (mplayer)
