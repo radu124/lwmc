@@ -1,15 +1,22 @@
 import json
-from lwmcConfig import config
+from Config import config
 
+# dictionary of video files indexed
+# key = numeric file id
+#  value[0] = path id
+#  value[1] = flags (m=movie)
+#  value[2] = info id - id of the info entry
+#  value[3] = filename
 files=dict()
-# read files list
+# read files list - space delimited fields fifth field may contain spaces
 for line in open(config.VIDEO_FILE_LIST):
 	thefile=line.split(None,4)
 	if len(thefile)<5:
 		continue
 	files[int(thefile[0])]=(int(thefile[1]),thefile[2],int(thefile[3]),thefile[4])
 
-
+##
+# movie sets not supported right now
 def GetMovieSets(request):
 	reqid=request["id"]
 	props=GetPropsOrFields(request)
@@ -17,19 +24,13 @@ def GetMovieSets(request):
 		"id":reqid,
 		"jsonrpc":"2.0",
 		"result":{
-			"limits":{ "start":0, "end":1, "total":1 },
-			"sets": [
-				{
-					"fanart":"special://fanart/11111.png" ,
-					"label":"all",
-					"setid":1,
-					"thumbnail":"special://thumbnail/11111.png" ,
-				}
-			]
+			"limits":{ "start":0, "end":0, "total":0 },
 		}
 	}
 	return json.dumps(response)
 
+##
+# produce dummy movie set containing all movies if asked for
 def GetMovieSetDetails(request):
 	reqid=request["id"]
 	props=GetPropsOrFields(request)
@@ -44,59 +45,78 @@ def GetMovieSetDetails(request):
 	response["items"]=GetMovieData(1,["label","movieid"])
 	return json.dumps(response)
 
+##
+# Retrieve data for the list of movies
+# @param idSet - currently ignored, restrict response to the given
+#    movie set
+# @param props - properties(fields) to be retrieved
+# @result {
+#   limits: start/end/total idicating size of movie list
+#   movies: array of movie entries, each entry containing a dictionary of
+#       prop:value pairs
+#	}
+# this is the format for GetMovies response
 def GetMovieData(idSet,props):
+	# only the start limit is set to 0, end and total will be set at
+	# the end, after counting the movie entries
 	result={
 		"limits":{
 			"start":0
 		},
 		"movies":[]
 	}
+	# traverse the list of files
 	for idFile,(idPath,flags,idInfo,fname) in files.items():
+		# ignore everything but movies
 		if flags!='m':
 			continue
+		# each item is a dictionary of prop:value entries
 		item=dict()
 		for prop in props:
-			propvalue='unknown'
+			value='unknown'
+			# for now just produce a list of dummy values
 			if prop=='file':
-				propvalue="/%d.avi"%idFile
+				value="/%d.avi"%idFile
 			elif prop=='label':
-				propvalue=fname
+				value=fname
 			elif prop=='fanart':
-				propvalue="special://fanart/%d.jpg"%idInfo
+				value="special://fanart/%d.jpg"%idInfo
 			elif prop=='thumbnail':
-				propvalue="special://thumbnail/%d.jpg"%idInfo
+				value="special://thumbnail/%d.jpg"%idInfo
 			elif prop=='streamdetails':
-				propvalue={
+				value={
 					"audio": [ { "channels":2, "codec":"mp3", "language":"" } ],
 					"video": [ { "aspect":1.33, "codec":"xvid", "duration":3600, "height":800, "width":600 } ]
 					}
 			elif prop=='imdbnumber':
-				propvalue="tt0000000"
+				value="tt0000000"
 			elif prop=='movieid':
-				propvalue=idFile
+				value=idFile
 			elif prop=="mpaa":
-				propvalue="Rated PG-13"
+				value="Rated PG-13"
 			elif prop=='playcount':
-				propvalue=0
+				value=0
 			elif prop=='rating':
-				propvalue=5
+				value=5
 			elif prop=='runtime':
-				propvalue='60'
+				value='60'
 			elif prop=='year':
-				propvalue=2000
+				value=2000
 			elif prop=='set':
-				propvalue=["all"]
+				value=[]
 			elif prop=='trailer':
-				propvalue="plugin://plugin.video.youtube/?action=play_video&videoid=00000000000"
-			item[prop]=propvalue
+				value="plugin://plugin.video.youtube/?action=play_video&videoid=00000000000"
+			item[prop]=value
 		result["movies"].append(item)
+	# assign end limits to the count of movies
 	count=len(result["movies"])
 	result["limits"]["end"]=count
 	result["limits"]["total"]=count
 	return result
 
 ##
-# Sudden change in protocol?
+# This field name seems to have changed in between protocol versions
+# we support both
 def GetPropsOrFields(request):
 	params=request["params"]
 	if "properties" in params:
@@ -105,6 +125,9 @@ def GetPropsOrFields(request):
 		props=params["fields"]
 	return props
 
+##
+# Produce a list of movies, essentially pack the list returned
+# by GetMovieData into a jsonrpc response
 def GetMovies(request):
 	reqid=request["id"]
 	props=GetPropsOrFields(request)
@@ -112,6 +135,6 @@ def GetMovies(request):
 	response={
 			"id":reqid,
 			"jsonrpc":"2.0",
-			"result": GetMovieData(1,props)
+			"result": GetMovieData(1,set(props) or [ "label" ])
 		}
 	return json.dumps(response)
