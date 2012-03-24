@@ -5,6 +5,8 @@ class config:
 	LWMC_DB_DIR=USER_HOME_DIR+"/.config/lwmc/userdata"
 	VIDEO_FILE_LIST=LWMC_DB_DIR+"/files.txt"
 	PATHS_FILE_LIST=LWMC_DB_DIR+"/paths.txt"
+	AUTH_FILE_LIST=LWMC_DB_DIR+"/auth.txt"
+	PASSWD_HASH=open(AUTH_FILE_LIST).readline().strip()
 
 # dictionary of video files indexed
 # key = numeric file id

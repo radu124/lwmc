@@ -117,3 +117,18 @@ def dcControl(par):
 		os.system('echo "seek +15 0" >>mplayercmdfifo')
 	if par=='SmallSkipBackward':
 		os.system('echo "seek -15 0" >>mplayercmdfifo')
+
+##
+# handle SetVolume direct command
+# @param par the volume level, on a scale to 100
+def dcSetVolume(par):
+	pars=par.split(')')
+	print "Set volume: ",pars[0]
+	os.system('echo "volume %d 1" >>mplayercmdfifo'%int(pars[0]))
+
+##
+# send a key command
+# - currently does nothing
+# TO DO
+def dcSendKey(par):
+	print "sendkey: ",int(par)
