@@ -1,19 +1,5 @@
 import json
-from Config import config
-
-# dictionary of video files indexed
-# key = numeric file id
-#  value[0] = path id
-#  value[1] = flags (m=movie)
-#  value[2] = info id - id of the info entry
-#  value[3] = filename
-files=dict()
-# read files list - space delimited fields fifth field may contain spaces
-for line in open(config.VIDEO_FILE_LIST):
-	thefile=line.split(None,4)
-	if len(thefile)<5:
-		continue
-	files[int(thefile[0])]=(int(thefile[1]),thefile[2],int(thefile[3]),thefile[4])
+from Config import config,files,paths
 
 ##
 # movie sets not supported right now
