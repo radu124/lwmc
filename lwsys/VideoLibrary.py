@@ -1,5 +1,7 @@
 import json
+
 from Config import config,files,paths
+from util import *
 
 ##
 # movie sets not supported right now
@@ -124,3 +126,10 @@ def GetMovies(request):
 			"result": GetMovieData(1,set(props) or [ "label" ])
 		}
 	return json.dumps(response)
+
+
+##
+# Produce a list of movies, essentially pack the list returned
+# by GetMovieData into a jsonrpc response
+def GetTVShows(request):
+	return plain_string_json_response(request,"null")

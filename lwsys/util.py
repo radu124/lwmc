@@ -23,12 +23,18 @@ def get_infofile_name(id):
 
 ##
 # produce a ping response string
-def pingresponse(reqid):
+def ping_response(request):
+	return plain_string_json_response(request,"pong")
+
+##
+# produce a ping response string
+def plain_string_json_response(request,resstring):
 	# reqid is needed for all responses
+	reqid=request["id"]
 	response={
 		"id":reqid,
 		"jsonrpc":"2.0",
-		"result":"pong"
+		"result":resstring
 	}
 	return json.dumps(response)
 
